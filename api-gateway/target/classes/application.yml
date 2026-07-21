@@ -13,10 +13,20 @@ spring:
               uri: lb://governance-service
               predicates:
                 - Path=/policies/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: governanceCircuitBreaker
+                    fallbackUri: forward:/fallback/governance
             - id: audit-service
               uri: lb://audit-service
               predicates:
                 - Path=/audit-logs/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: auditCircuitBreaker
+                    fallbackUri: forward:/fallback/audit
 
 eureka:
   client:
@@ -25,3 +35,17 @@ eureka:
   instance:
     prefer-ip-address: false
     hostname: localhost
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      governanceCircuitBreaker:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+      auditCircuitBreaker:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
