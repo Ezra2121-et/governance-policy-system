@@ -1,10 +1,10 @@
 package com.dengene.governance_service.controller;
-
 import com.dengene.governance_service.dto.policyCreateRequest;
 import com.dengene.governance_service.dto.PolicyResponse;
 import com.dengene.governance_service.model.Policy;
 import com.dengene.governance_service.service.PolicyService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +18,9 @@ public class policyController {
 
     private final PolicyService policyService;
 
+    @Value("${server.port}")
+    private String port;
+
     @PostMapping
     public ResponseEntity<PolicyResponse> createPolicy(@RequestBody policyCreateRequest request) {
         Policy policy = policyService.createPolicy(request.getTitle(), request.getDescription(), request.getCreatedBy());
@@ -26,6 +29,7 @@ public class policyController {
 
     @GetMapping
     public ResponseEntity<List<PolicyResponse>> getAllPolicies() {
+        System.out.println(">>> Handled by instance on port: " + port);
         List<Policy> policies = policyService.getAllPolicies();
         List<PolicyResponse> responses = policies.stream()
                 .map(PolicyResponse::fromPolicy)
