@@ -1,4 +1,4 @@
-package com.dengen.eureka_server;
+package com.dengene.eureka_server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

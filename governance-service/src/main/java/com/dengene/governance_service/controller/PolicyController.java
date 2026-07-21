@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/policies")
 @RequiredArgsConstructor
-public class policyController {
+public class PolicyController {
 
     private final PolicyService policyService;
     private final PolicyApprovalSagaService policyApprovalSagaService;
@@ -31,7 +31,6 @@ public class policyController {
 
     @GetMapping
     public ResponseEntity<List<PolicyResponse>> getAllPolicies() {
-        System.out.println(">>> Handled by instance on port: " + port);
         List<Policy> policies = policyService.getAllPolicies();
         List<PolicyResponse> responses = policies.stream()
                 .map(PolicyResponse::fromPolicy)
