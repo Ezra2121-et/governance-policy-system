@@ -1,10 +1,13 @@
 package com.dengene.governance_service.service;
 
+import com.dengene.governance_service.model.OutboxEvent;
 import com.dengene.governance_service.model.Policy;
 import com.dengene.governance_service.model.PolicyStatus;
+import com.dengene.governance_service.repository.OutboxEventRepository;
 import com.dengene.governance_service.repository.PolicyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
@@ -12,8 +15,9 @@ import java.util.List;
 public class PolicyService {
 
     private final PolicyRepository policyRepository;
-    private final KafkaProducerService kafkaProducerService;
+    private final OutboxEventRepository outboxEventRepository;
 
+    @Transactional
     public Policy createPolicy(String title, String description, String createdBy) {
         Policy policy = new Policy();
         policy.setTitle(title);
@@ -21,7 +25,7 @@ public class PolicyService {
         policy.setCreatedBy(createdBy);
 
         Policy savedPolicy = policyRepository.save(policy);
-        kafkaProducerService.publishEvent("policy-created", savedPolicy.getId(), createdBy);
+        outboxEventRepository.save(new OutboxEvent("policy-created", savedPolicy.getId(), createdBy));
 
         return savedPolicy;
     }
@@ -35,6 +39,7 @@ public class PolicyService {
                 .orElseThrow(() -> new RuntimeException("Policy not found with id: " + id));
     }
 
+    @Transactional
     public Policy submitPolicy(Long id) {
         Policy policy = getPolicyById(id);
         if (!policy.getStatus().equals(PolicyStatus.DRAFT)) {
@@ -42,11 +47,12 @@ public class PolicyService {
         }
         policy.setStatus(PolicyStatus.PENDING_APPROVAL);
         Policy savedPolicy = policyRepository.save(policy);
-        kafkaProducerService.publishEvent("policy-submitted", policy.getId(), policy.getCreatedBy());
+        outboxEventRepository.save(new OutboxEvent("policy-submitted", policy.getId(), policy.getCreatedBy()));
 
         return savedPolicy;
     }
 
+    @Transactional
     public Policy approvePolicy(Long id) {
         Policy policy = getPolicyById(id);
         if (!policy.getStatus().equals(PolicyStatus.PENDING_APPROVAL)) {
@@ -54,11 +60,12 @@ public class PolicyService {
         }
         policy.setStatus(PolicyStatus.APPROVED);
         Policy savedPolicy = policyRepository.save(policy);
-        kafkaProducerService.publishEvent("policy-approved", policy.getId(), policy.getCreatedBy());
+        outboxEventRepository.save(new OutboxEvent("policy-approved", policy.getId(), policy.getCreatedBy()));
 
         return savedPolicy;
     }
 
+    @Transactional
     public Policy rejectPolicy(Long id) {
         Policy policy = getPolicyById(id);
         if (!policy.getStatus().equals(PolicyStatus.PENDING_APPROVAL)) {
@@ -66,7 +73,7 @@ public class PolicyService {
         }
         policy.setStatus(PolicyStatus.REJECTED);
         Policy savedPolicy = policyRepository.save(policy);
-        kafkaProducerService.publishEvent("policy-rejected", policy.getId(), policy.getCreatedBy());
+        outboxEventRepository.save(new OutboxEvent("policy-rejected", policy.getId(), policy.getCreatedBy()));
 
         return savedPolicy;
     }
