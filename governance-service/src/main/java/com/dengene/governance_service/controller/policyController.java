@@ -2,6 +2,7 @@ package com.dengene.governance_service.controller;
 import com.dengene.governance_service.dto.policyCreateRequest;
 import com.dengene.governance_service.dto.PolicyResponse;
 import com.dengene.governance_service.model.Policy;
+import com.dengene.governance_service.service.PolicyApprovalSagaService;
 import com.dengene.governance_service.service.PolicyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 public class policyController {
 
     private final PolicyService policyService;
+    private final PolicyApprovalSagaService policyApprovalSagaService;
 
     @Value("${server.port}")
     private String port;
@@ -51,7 +53,7 @@ public class policyController {
 
     @PostMapping("/{id}/approve")
     public ResponseEntity<PolicyResponse> approvePolicy(@PathVariable Long id) {
-        Policy policy = policyService.approvePolicy(id);
+        Policy policy = policyApprovalSagaService.approveWithSaga(id);
         return ResponseEntity.ok(PolicyResponse.fromPolicy(policy));
     }
 
