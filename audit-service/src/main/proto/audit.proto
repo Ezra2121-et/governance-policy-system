@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package audit;
+
+option java_package = "com.dengene.audit_service.grpc";
+option java_multiple_files = true;
+
+service AuditService {
+  rpc CreateAuditLog (AuditLogRequest) returns (AuditLogReply);
+}
+
+message AuditLogRequest {
+  string eventType = 1;
+  int64 policyId = 2;
+  string actor = 3;
+}
+
+message AuditLogReply {
+  int64 id = 1;
+  string status = 2;
+}
