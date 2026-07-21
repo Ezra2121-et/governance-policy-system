@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: api-gateway
+  data:
+    redis:
+      host: localhost
+      port: 6379
   cloud:
     gateway:
       server:
@@ -18,6 +22,12 @@ spring:
                   args:
                     name: governanceCircuitBreaker
                     fallbackUri: forward:/fallback/governance
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 5
+                    redis-rate-limiter.burstCapacity: 10
+                    redis-rate-limiter.requestedTokens: 1
+                    key-resolver: "#{@ipKeyResolver}"
             - id: audit-service
               uri: lb://audit-service
               predicates:
@@ -27,6 +37,12 @@ spring:
                   args:
                     name: auditCircuitBreaker
                     fallbackUri: forward:/fallback/audit
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 5
+                    redis-rate-limiter.burstCapacity: 10
+                    redis-rate-limiter.requestedTokens: 1
+                    key-resolver: "#{@ipKeyResolver}"
 
 eureka:
   client:

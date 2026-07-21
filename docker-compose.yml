@@ -8,7 +8,6 @@ services:
       POSTGRES_DB: governance_db
     ports:
       - "5432:5432"
-
   postgres-audit:
     image: postgres:15
     container_name: audit-postgres
@@ -18,13 +17,16 @@ services:
       POSTGRES_DB: audit_db
     ports:
       - "5433:5432"
-
+  redis:
+    image: redis:7
+    container_name: governance-redis
+    ports:
+      - "6379:6379"
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
-
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
